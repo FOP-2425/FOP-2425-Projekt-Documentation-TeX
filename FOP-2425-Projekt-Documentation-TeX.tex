@@ -1,0 +1,337 @@
+\documentclass[
+    inlineshortcut=java, % Befehl \inlinejava{<code>} Konfigurieren
+    corporatedesign, % TU-Design
+    boxarc, % Abgerundete Ecken bei den Boxen
+    fop, % FOP-Vorlage benutzen
+    % dark_mode, % comment in for dark mode \:D
+]{algoexercise}
+
+%%------------%%
+%%--Packages--%%
+%%------------%%
+
+\usepackage{enumitem}
+\usepackage{rotating}
+\usepackage{hyperref}
+\usepackage{placeins}
+\setlength{\marginparwidth}{10cm}
+\usetikzlibrary{positioning}
+
+%%----------------------------%%
+%%--Stilistische Anpassungen--%%
+%%----------------------------%%
+
+\ConfigureHeadline{
+    headline={algo-min}
+}
+
+\ExplSyntaxOn
+\renewcommand*{\thetask}{%
+    \tl_use:c {g_algo_ex_taskgroup_prefix_tl} \int_eval:n {\value{task} - \g_algo_ex_taskoffset_int}
+}
+\renewcommand*{\thesubtask}{%
+    \tl_use:c {g_algo_ex_taskgroup_prefix_tl} \int_eval:n {\value{task} - \g_algo_ex_taskoffset_int}.\arabic{subtask}%
+}
+\ExplSyntaxOff
+
+
+\DeclareDocumentProperty{duedate}[][Abgabe~des~Projekts:\hfill *]
+
+\defcaptionname{ngerman, german}{\PointName}{Projektpunkt}
+\defcaptionname{english, american, british}{\PointName}{Projectpoint}
+\defcaptionname{ngerman, german}{\PointsName}{Projektpunkte}
+\defcaptionname{english, american, british}{\PointsName}{Projectpoints}
+
+\ExplSyntaxOn
+\renewcommand*{\author}[1]{
+    \exp_args:Nc \seq_gset_split:Nnn {g_ \tudaPkgPrefix _author_seq} {\and} {#1}
+    \seq_if_empty:cF {g_ \tudaPkgPrefix _author_seq} {\tl_gset:Nn \printAuthor {\int_compare:nTF{\seq_count:c {g_ \tudaPkgPrefix _author_seq} > 1}{Gruppenmitglieder}{Gruppenmitglied}:~\hfill\seq_use:cnnn {g_ \tudaPkgPrefix _author_seq} {~\authorandname{}~} {,~} {~\authorandname{}~}\par}}
+}
+\ExplSyntaxOff
+
+\def\tileWidth{10mm}
+\pgfmathsetlengthmacro\tileRadius{\tileWidth/cos(30)}
+\def\gridRadius{3}
+\colorlet{tilecolor}{\IfDarkModeTF{gray!60}{gray}}
+\pgfmathdeclarerandomlist{ressourceTypes}{
+    {PLAIN}
+    {MOUNTAIN}
+}
+
+\tikzset{
+fbw/.style={very thick,shorten >=-0.6pt,shorten <=-0.6pt},
+fbwshorten/.style={fbw,shorten >=0.6pt,shorten <=0.6pt},
+tile/.style={
+    tilecolor,
+    regular polygon,
+    regular polygon sides=6,
+    shape border rotate=30,
+    minimum size=2*\tileRadius,
+    inner sep=0mm,
+    outer sep=0mm,
+    draw=tilecolor,
+    line width=1mm
+},
+road/.style={
+    draw=#1,
+    line width=0.5mm,
+    shorten >=1pt,shorten <=1pt,
+    % densely dashed,
+},
+road/.default=.,
+settlement/.style={
+    draw=tilecolor,
+    fill=\thepagecolor,
+    circle,
+    minimum size=4mm,
+    inner sep=0mm,
+    outer sep=0mm,
+    line width=.5mm,
+},
+settlement/.default=.,
+village/.style={
+settlement=#1,
+label=center:{\textcolor{#1}{\tiny\faHome}},
+},
+village/.default=.,
+city/.style={
+settlement=#1,
+label=center:{\textcolor{#1}{\tiny\faCity}},
+},
+city/.default=.,
+}
+\colorlet{qaxiscolor}{TUDa-3\IfDarkModeTF{a}{b}}
+\colorlet{raxiscolor}{TUDa-1\IfDarkModeTF{a}{b}}
+\colorlet{saxiscolor}{TUDa-10\IfDarkModeTF{a}{b}}
+
+\newcommand*{\qaxis}{\ensuremath{{\color{qaxiscolor}q}}}
+\newcommand*{\raxis}{\ensuremath{{\color{raxiscolor}r}}}
+\newcommand*{\saxis}{\ensuremath{{\color{saxiscolor}s}}}
+\newcommand*{\hexcoord}[3]{({\color{qaxiscolor}#1}, {\color{raxiscolor}#2}, {\color{saxiscolor}#3})}
+
+\pgfmathsetlengthmacro\xdiff{\tileWidth/2}
+\pgfmathsetlengthmacro\ydiff{sin(60) * \xdiff}
+\pgfmathsetlengthmacro\tileRadius{\xdiff/cos(30)}
+
+\newcommand*{\roads}[2]{
+    % define boolean for first iteration
+    \def\lastpos{}
+    \foreach \r in {#2}{
+        % if \lastpos is not empty
+        \ifx\lastpos\empty
+        \else
+            % draw road
+            \draw[road=#1] \lastpos -- \r;
+        \fi
+        % set last position
+        \xdef\lastpos{\r}
+    }
+}
+
+%%---------------------------%%
+%%--Dokumenteneinstellungen--%%
+%%---------------------------%%
+
+\def\groupnumber{<GroupNumber>} % Gruppennummer
+\author{<Author1>\and <Author2>\and <Author3>\and <Author4>} % Gruppenmitglieder
+\duedate{14.03.2025 bis 23:50 Uhr}
+\subtitle{Prof. Karsten Weihe}
+\dozent{Prof. Karsten Weihe} % chktex 12
+\fachbereich{Informatik}
+\semester{Wintersemester 24/25} % z.B. SoSe 2022 oder WiSe 2022/2023
+\sheetnumber*{Projekt} % Einstellige Nummern werden mit 0 aufgefüllt
+\slides{*} % Die Relevanten Foliensätze
+\topics{Alle Inhalte der FOP} % Für das Übungsblatt relevante Themengebiete
+\title[Gruppe \groupnumber{}]{Projekt-Dokumentation}
+\version{1.0.0-SNAPSHOT}
+\graphicspath{{./pictures/}}
+
+%%-------------------------%%
+%%--Beginn des Dokumentes--%%
+%%-------------------------%%
+
+\begin{document}%
+
+    %%-----------%%
+    %%--Titelei--%%
+    %%-----------%%
+
+    \maketitle{}
+
+    %%-------------%%
+    %%--H-Übungen--%%
+    %%-------------%%
+
+    \hue{FOP \getSheetnumber{}}{Dampfross}{100}
+    \nextTaskGroup{P}
+
+    %\tableofcontents
+
+    %%--------------%%
+    %%--Einleitung--%%
+    %%--------------%%
+
+    Dies ist die \LaTeX-Vorlage für das FOP-Projekt. Alle notwendigen Einstellungen können sie im Bereich Dokumenteneinstellungen ab Z. 126 anpassen:
+
+    \begin{codeBlock}[escapeinside=||,highlightlines=1-2]{title=\codeBlockTitle{Dokumenteneinstellungen},minted language=latex}
+        \def\groupnumber{<GroupNumber>} % Gruppennummer
+        \author{<Author1>\and <Author2>\and <Author3>\and <Author4>} % Gruppenmitglieder
+        \duedate{14.03.2025 bis 23:50 Uhr}
+        \subtitle{Prof. Karsten Weihe}
+        \dozent{Prof. Karsten Weihe} % chktex 12
+        \fachbereich{Informatik}
+        \semester{Wintersemester 24/25} % z.B. SoSe 2022 oder WiSe 2022/2023
+        \sheetnumber*{Projekt} % Einstellige Nummern werden mit 0 aufgefüllt
+        \slides{*} % Die Relevanten Foliensätze
+        \topics{Alle Inhalte der FOP} % Für das Übungsblatt relevante Themengebiete
+        \title[Gruppe \groupnumber{}]{Projekt-Dokumentation}
+        \version{1.0.0-SNAPSHOT}
+        \graphicspath{{./pictures/}}
+    \end{codeBlock}
+
+    % Falls Sie unsere \LaTeX Zeichnungen verwenden oder erweitern wollen, sind hier einige Beispiele:
+    % \begin{figure}[ht!]
+    %     \centering
+    %     \begin{tikzpicture}
+    %         \tikzset{
+    %             x={(\xdiff, \ydiff)},
+    %             y={(0, -\ydiff)},
+    %             z={(-\xdiff, \ydiff)},
+    %         }
+    %         % draw the hexagon grid with given radius
+    %         \foreach \x in {-\gridRadius, ..., \gridRadius}{
+    %             \foreach \y in {-\gridRadius, ..., \gridRadius}{
+    %                 % only draw if in radius
+    %                 \pgfmathtruncatemacro{\sum}{abs(\x+\y)}
+    %                 \ifnum\sum < \numexpr\gridRadius+1\relax
+    %                     \def\z{\the\numexpr-\x-\y\relax}
+    %                     % select random tile type
+    %                     \pgfmathrandomitem{\type}{ressourceTypes}
+    %                     % tile
+    %                     \node[tile,font=\tiny,align=center] (g-\x-\y) at (\x, \y, \z){(\x,\y,\z)\\\type};
+    %                 \fi
+    %             }
+    %         }
+
+    %         % roads
+    %         \roads{cyan}{
+    %             (g-0-0.corner 1),
+    %             (g-0-0.corner 2),
+    %             (g-0-0.corner 3),
+    %             (g--1-0.corner 4)
+    %         }
+
+    %         \roads{orange}{
+    %             (g-1-2.corner 2),
+    %             (g-1-2.corner 3),
+    %             (g-0-2.corner 4)
+    %         }
+
+    %         \roads{orange}{
+    %             (g-0-0.corner 3),
+    %             (g-0-0.corner 4)
+    %         }
+
+    %         % villages and cities
+    %         \node[village=cyan] at (g-0-0.corner 1){};
+    %         \node[city=cyan] at (g--1-0.corner 4){};
+    %         \node[village=orange] at (g-0-0.corner 4){};
+    %         \node[city=orange] at (g-1-2.corner 2){};
+
+    %         % compass
+    %         \coordinate (compass) at (-5,3.5,3);
+    %         \draw[qaxiscolor,thick,-Latex] (compass)+(-1,0,0) -- ++(1.2,0,0) node[above right]{\verb+q+};
+    %         \draw[raxiscolor,thick,-Latex] (compass)+(0,-1,0) -- ++(0,1.5,0) node[below]{\verb+r+};
+    %         \draw[saxiscolor,thick,-Latex] (compass)+(0,0,-1) -- ++(0,0,1.2) node[above left]{\verb+s+};
+
+    %     \end{tikzpicture}
+    %     \label{fig:hexgrid}
+    %     \caption[short]{Die Abbildung zeigt eine vereinfachte Darstellung des Spielfelds. Koordinaten werden im Format \hexcoord{q}{r}{s} angegeben. Hierbei steht \inlinejava{WOOD} für Holz, \inlinejava{CLAY} für Lehm, \inlinejava{GRAIN} für Getreide, ORE für Erz und \inlinejava{WOOL} für Wolle.}
+    % \end{figure}
+
+    % \begin{figure}[ht!]
+    %     \centering
+    %     \begin{subfigure}[b]{.3\textwidth}
+    %         \centering
+    %         \begin{tikzpicture}
+    %             \tikzset{
+    %                 x={(\xdiff, \ydiff)},
+    %                 y={(0, -\ydiff)},
+    %                 z={(-\xdiff, \ydiff)},
+    %             }
+    %             % draw the hexagon grid with given radius
+    %             \pgfmathrandomitem{\type}{ressourceTypes}
+    %             \node[tile,font=\tiny,align=center] (g-0-0) at (0, 0, 0){(0,0,0)\\\type};
+    %             \node[tile,font=\tiny,align=center] (g-0--1) at (0, -1, 1){(0,-1,1)\\\type};
+    %             \node[tile,font=\tiny,align=center] (g-1--1) at (1, -1, 0){(1,-1,0)\\\type};
+
+    %             \node[TUDa-8a,fill,circle, minimum size=2mm, inner sep=0pt, outer sep=0pt] at (g-0-0.corner 1) (mark-1){};
+    %         \end{tikzpicture}
+    %         \caption{ohne Siedlung (orange markiert)}
+    %         \label{fig:intersection:withoutSettlement}
+    %     \end{subfigure}%
+    %     \begin{subfigure}[b]{.3\textwidth}
+    %         \centering
+    %         \begin{tikzpicture}
+    %             \tikzset{
+    %                 x={(\xdiff, \ydiff)},
+    %                 y={(0, -\ydiff)},
+    %                 z={(-\xdiff, \ydiff)},
+    %             }
+    %             % draw the hexagon grid with given radius
+    %             \pgfmathrandomitem{\type}{ressourceTypes}
+    %             \node[tile,font=\tiny,align=center] (g-0-0) at (0, 0, 0){(0,0,0)\\\type};
+    %             \node[tile,font=\tiny,align=center] (g-0--1) at (0, -1, 1){(0,-1,1)\\\type};
+    %             \node[tile,font=\tiny,align=center] (g-1--1) at (1, -1, 0){(1,-1,0)\\\type};
+
+    %             \node[village=TUDa-8a] at (g-0-0.corner 1){};
+    %         \end{tikzpicture}
+    %         \caption{mit Dorf}
+    %         \label{fig:intersection:withVillage}
+    %     \end{subfigure}%
+    %     \begin{subfigure}[b]{.3\textwidth}
+    %         \centering
+    %         \begin{tikzpicture}
+    %             \tikzset{
+    %                 x={(\xdiff, \ydiff)},
+    %                 y={(0, -\ydiff)},
+    %                 z={(-\xdiff, \ydiff)},
+    %             }
+    %             % draw the hexagon grid with given radius
+    %             \pgfmathrandomitem{\type}{ressourceTypes}
+    %             \node[tile,font=\tiny,align=center] (g-0-0) at (0, 0, 0){(0,0,0)\\\type};
+    %             \node[tile,font=\tiny,align=center] (g-0--1) at (0, -1, 1){(0,-1,1)\\\type};
+    %             \node[tile,font=\tiny,align=center] (g-1--1) at (1, -1, 0){(1,-1,0)\\\type};
+
+    %             \node[city=TUDa-8a] at (g-0-0.corner 1){};
+    %         \end{tikzpicture}
+    %         \caption{mit Stadt}
+    %         \label{fig:intersection:withCity}
+    %     \end{subfigure}%
+    %     \caption[short]{Die Abbildung zeigt eine Intersection und die drei angrenzenden Tiles. Eine Intersection kann auch weniger als drei angrenzende Tiles haben, wenn sie sich am Spielfeldrand befindet. Um genau zu sein: An jeder Ecke jedes \inlinejava{Tile}s befindet sich eine Intersection.}
+    %     \label{fig:intersection}
+    % \end{figure}
+    % \FloatBarrier{}
+
+    \begin{vanforderung}
+        Entfernen Sie die Beispiele vor der Abgabe.
+    \end{vanforderung}
+
+    \begin{hinweis}
+        Auskommentieren reicht
+    \end{hinweis}
+
+    \clearpage{}
+
+    % direkt mit P5 beginnen
+    \setcounter{task}{4}
+    \begin{task}[points=30]{Weiterführende Aufgaben}\label{ex:P5}
+        \begin{subtask}[title=Neue Spielmechaniken,points=10]\label{ex:P5.1}
+            TODO
+        \end{subtask}
+
+        \begin{subtask}[title=KI als Gegner?,points=10]\label{ex:P5.2}
+            TODO
+        \end{subtask}
+    \end{task}
+\end{document}
