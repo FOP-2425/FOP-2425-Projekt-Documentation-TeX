@@ -20,7 +20,7 @@ Die $\LaTeX$-Vorlage für die Dokumentation des FOP-Projekts im Wintersemester 2
 - Dieses Repository klonen
 - kompilieren z.B. mit `docker run --rm -v $(pwd):/workspace -w /workspace make -j $(nproc)`
 ### Online (Sharelatex der TU-Darmstadt)
-Falls eine Latex-Installation nicht möglich ist, haben wir hier auch eine Sharelatex-Vorlage erstellt: [Sharelatex](https://sharelatex.tu-darmstadt.de/project/65c94521794fdbaf65f8a7e4)
+Falls eine Latex-Installation nicht möglich ist, haben wir hier auch eine Sharelatex-Vorlage erstellt: [Sharelatex](https://sharelatex.tu-darmstadt.de/project/67703305c41892eb5df9a560)
 
 Um diese zu nutzen:
 - Einloggen auf [Sharelatex](https://sharelatex.tu-darmstadt.de/)
