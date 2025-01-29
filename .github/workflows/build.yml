@@ -19,6 +19,8 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    # automatically cancel the workflow if it runs longer than 10 minutes
+    timeout-minutes: 10
     # The docker image to use for the container
     container:
       image: ghcr.io/tudalgo/algotex:latest
@@ -27,24 +29,18 @@ jobs:
     steps:
       # 1. Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Set up Git repository
-        uses: actions/checkout@v3
-
-      # Link texmf folder to the current texmf home (needed for this docker image)
-      - name: Link texmf folder to the current texmf home
-        run: |
-          ln -s /root/texmf $(kpsewhich -var-value=TEXMFHOME)
-          texhash --verbose
+        uses: actions/checkout@v4
 
       # 2. Build the document
       - name: "Build the document"
         run: |
-          CI_RUN=1 make -j $(nproc)
+          make -j
           mv build/*.pdf .
 
       # 3. Upload artifacts to GitHub
       - name: Upload artifacts to GitHub
-        #if: ${{ !env.ACT }} # uncomment this if you want to test this action with act without passing --artifact-server-path
-        uses: actions/upload-artifact@v3
+        #if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
         with:
           name: PDF
           path: "*.pdf"
